@@ -1,17 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ImageUpload } from "@/components/ImageUpload";
 import { CodeDisplay } from "@/components/CodeDisplay";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { LogOut } from "lucide-react";
 
 const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedFramework, setSelectedFramework] = useState<string>("html-tailwind");
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to auth if not authenticated
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
 
   const handleImageUpload = (imageDataUrl: string) => {
     setUploadedImage(imageDataUrl);
     setGeneratedCode(""); // Clear previous code when new image is uploaded
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
 
   const handleGenerateCode = async () => {
@@ -160,18 +178,39 @@ export default GeneratedComponent;`;
     }
   };
 
+  // Show loading or redirect if not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-surface">
         <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="gradient-primary w-10 h-10 rounded-xl flex items-center justify-center">
-              <span className="text-primary-foreground text-xl font-bold">✨</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="gradient-primary w-10 h-10 rounded-xl flex items-center justify-center">
+                <span className="text-primary-foreground text-xl font-bold">✨</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold gradient-text">UI Vision Coder</h1>
+                <p className="text-muted-foreground text-sm">From Image to Code with AI</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold gradient-text">UI Vision Coder</h1>
-              <p className="text-muted-foreground text-sm">From Image to Code with AI</p>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-muted-foreground">
+                Welcome, {user?.email}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center space-x-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </Button>
             </div>
           </div>
         </div>
